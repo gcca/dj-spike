@@ -1,6 +1,7 @@
 # F-001: Advertiser API
 
-**Status:** Open
+**Status:** Complete
+**Completed:** 2025-03-05
 **Impact:** REST API to manage advertisers (job posters) via CRUD operations at `{host}/api/v1/advertisers/`.
 
 ## Problem

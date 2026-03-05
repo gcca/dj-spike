@@ -8,13 +8,13 @@ See `AGENTS.md` for F lifecycle stages and management guidelines.
 
 | F | Title | Status | Effort | Priority |
 |----|-------|--------|--------|----------|
-| F-001 | Advertiser API | Open | Medium | — |
+| - | - | - | - | No active features |
 
 ## Completed
 
 | F | Title | Completed | Notes |
 |----|-------|-----------|-------|
-| - | - | - | No completed features yet |
+| F-001 | Advertiser API | 2025-03-05 | REST API CRUD para advertisers |
 
 ## Deferred / Closed
 
