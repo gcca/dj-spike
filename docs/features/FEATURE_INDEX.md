@@ -8,7 +8,7 @@ See `AGENTS.md` for F lifecycle stages and management guidelines.
 
 | F | Title | Status | Effort | Priority |
 |----|-------|--------|--------|----------|
-| - | - | - | - | No active features yet |
+| F-001 | Advertiser API | Open | Medium | — |
 
 ## Completed
 
