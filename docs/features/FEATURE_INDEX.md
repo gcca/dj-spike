@@ -9,6 +9,7 @@ See `AGENTS.md` for F lifecycle stages and management guidelines.
 | F | Title | Status |
 |----|-------|--------|
 | F-002 | Advertiser Performance Report | Open |
+| F-003 | Advertiser Filters | Open |
 
 ## Completed
 
