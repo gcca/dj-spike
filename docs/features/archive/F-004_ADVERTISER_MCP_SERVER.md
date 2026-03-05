@@ -1,6 +1,7 @@
 # F-004: Advertiser MCP Server
 
-**Status:** Open
+**Status:** Complete
+**Completed:** 2025-03-05
 **Impact:** Expose the Advertiser model via MCP (Model Context Protocol) so agents can navigate and modify advertiser data. Mount at `/mcp`. No authentication — public access.
 
 ## Problem
