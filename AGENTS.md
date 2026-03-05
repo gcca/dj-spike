@@ -29,6 +29,10 @@ pre-commit run --files path/to/file1 path/to/file2 ...
 
 Feature documents specify which files belong to each worker. Every worker runs the command above after making changes.
 
+### Worker Scope
+
+Each worker **must only perform the tasks assigned to it** in the feature document. Worker A does only what the feature says for Worker A; Worker B only what it says for Worker B; Worker Test only what it says for Worker Test. **No worker may perform tasks assigned to another worker** or any work outside its scope.
+
 ### Auto-correction Policy
 
 - **Auto-correct** formatting issues only (e.g., black, ruff formatting, trailing whitespace).
