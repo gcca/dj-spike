@@ -6,3 +6,4 @@ __pycache__/
 .pdm-python
 .agents
 .cursor
+db.sqlite3

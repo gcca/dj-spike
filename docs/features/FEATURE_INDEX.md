@@ -6,9 +6,9 @@ See `AGENTS.md` for F lifecycle stages and management guidelines.
 
 ## Active Features
 
-| F | Title | Status | Effort | Priority |
-|----|-------|--------|--------|----------|
-| - | - | - | - | No active features |
+| F | Title | Status |
+|----|-------|--------|
+| F-002 | Advertiser Performance Report | Open |
 
 ## Completed
 
