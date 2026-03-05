@@ -37,7 +37,7 @@ Internal teams (account management, sales, operations, finance, leadership) need
 | **Identification** | `id` | Advertiser ID |
 | | `name` | Commercial name |
 | | `monetization_type` | CPC or CPA |
-| | `billing_source` | Internal or Partner |
+| | `billing_source` | `INTERNAL` o `PARTNER` (valores enum) |
 | **Volume** | `impressions` | Total impressions |
 | | `clicks` | Total clicks |
 | | `conversions` | Total conversions |
@@ -46,18 +46,18 @@ Internal teams (account management, sales, operations, finance, leadership) need
 | | `discount_rate` | Applied discount (percentage or absolute) |
 | | `discount_amount` | Discount applied |
 | | `net_spend` | Real billed amount (gross − discount) |
-| | `effective_cpc` | Shown only if clicks and/or CPC model |
-| | `effective_cpa` | Shown only if conversions and/or CPA model |
+| | | `effective_cpc` | `net_spend / clicks`; omitido si `clicks == 0` o modelo CPA; si no aplica, enviar `null` |
+| | `effective_cpa` | `net_spend / conversions`; omitido si `conversions == 0` o modelo CPC; si no aplica, enviar `null` |
 
 ### Query Parameters
 
 | Parameter | Required | Default | Description |
 |-----------|----------|---------|-------------|
-| `date_from` | Yes | — | Start of period (inclusive) |
-| `date_to` | Yes | — | End of period (inclusive) |
-| `monetization_type` | No | all | CPC, CPA, or all |
-| `billing_source` | No | all | Internal, Partner, or all |
-| `billing_timezone` | No | all | UTC, EST, CST, PST, or all |
+| `date_from` | Yes | — | Start of period (inclusive). Formato `YYYY-MM-DD`, interpretado en UTC |
+| `date_to` | Yes | — | End of period (inclusive). Formato `YYYY-MM-DD`, interpretado en UTC |
+| `monetization_type` | No | all | `CPC`, `CPA`, o `all` |
+| `billing_source` | No | all | `INTERNAL`, `PARTNER`, o `all` (valores del enum Advertiser) |
+| `billing_timezone` | No | all | `UTC`, `EST`, `CST`, `PST`, o `all` |
 | `search` | No | — | Partial advertiser name search |
 | `order_by` | No | `net_spend` | `net_spend`, `conversions`, `ctr`, `effective_cpa`, `effective_cpc`, `name` |
 | `order` | No | `desc` | `asc` or `desc` |
@@ -65,8 +65,8 @@ Internal teams (account management, sales, operations, finance, leadership) need
 ### Business Rules
 
 - **Timezone:** For each advertiser, use its billing timezone to determine which events fall into each day of the selected range.
-- **Historical consistency:** If an advertiser changed discount, monetization, or timezone during the period, use the value that applied on each day.
-- **Division by zero:** Handle CTR, effective CPC, effective CPA safely (e.g., null or 0).
+- **Historical consistency:** En esta iteración, el modelo Advertiser no tiene historial. Usar siempre los valores actuales del advertiser (discount, monetization_type, billing_timezone). La regla de "valor que aplicaba cada día" queda diferida a una feature futura con audit/historial.
+- **Division by zero:** CTR con 0 impressions → `null`; effective_cpc con 0 clicks → `null`; effective_cpa con 0 conversions → `null`.
 - **No activity:** Advertisers with no activity may be omitted or shown with zeros (product decision).
 - **Currency:** Monetary values with 2 decimals, in platform base currency.
 - **Performance:** Report should load quickly even with hundreds or thousands of active advertisers.
@@ -84,6 +84,21 @@ Internal teams (account management, sales, operations, finance, leadership) need
 
 - **F-001:** Advertiser model and API must exist (advertiser id, name, monetization_type, billing_source, billing_timezone, discount).
 - **Data source:** This feature assumes a source of events (impressions, clicks, conversions, spend). The exact schema and storage are out of scope for this F; the report API should be designed to consume aggregated or raw data from a service or table to be defined.
+
+### Event Data Stub (for development and tests)
+
+Until the event schema exists, the service must consume data from a stub. The stub should return aggregates per advertiser and date with at least:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `advertiser_id` | int | FK to Advertiser |
+| `date` | date | Day (YYYY-MM-DD) in advertiser's billing timezone |
+| `impressions` | int | Total impressions |
+| `clicks` | int | Total clicks |
+| `conversions` | int | Total conversions |
+| `gross_spend` | Decimal | Amount before discount |
+
+The stub may return empty data or synthetic rows for testing filters, sorting, and division-by-zero. The service computes `ctr`, `discount_amount`, `net_spend`, `effective_cpc`, `effective_cpa` from these fields and the Advertiser's `discount`.
 
 ---
 
@@ -108,8 +123,8 @@ Workers must not modify the same files. Execution order: **Worker A first**, the
 
 | Task | Files | Instructions |
 |------|-------|--------------|
-| Add report serializer | `dj_advertisers/serializers.py` | Add `PerformanceReportRowSerializer` with fields: id, name, monetization_type, billing_source, impressions, clicks, conversions, ctr, gross_spend, discount_rate, discount_amount, net_spend, effective_cpc, effective_cpa |
-| Create report service | `dj_advertisers/services.py` | Implement `get_performance_report(date_from, date_to, filters)` — aggregation logic, filters (monetization_type, billing_source, billing_timezone, search), sorting. Use Advertiser model; event data can be stubbed until schema exists |
+| Add report serializer | `dj_advertisers/serializers.py` | Add `PerformanceReportRowSerializer` con campos: id, name, monetization_type, billing_source (valores enum: INTERNAL, PARTNER), impressions, clicks, conversions, ctr, gross_spend, discount_rate, discount_amount, net_spend, effective_cpc, effective_cpa (null cuando no aplica) |
+| Create report service | `dj_advertisers/services.py` | Implement `get_performance_report(date_from, date_to, filters)` — aggregation logic, filters (monetization_type, billing_source, billing_timezone, search), sorting. Use Advertiser model; consumir datos del stub según estructura definida en sección "Event Data Stub" |
 | Create report tests | `dj_advertisers/tests/test_report.py` | Test serializer output; test service filters, sorting, division-by-zero, empty results |
 
 **Worker A must not touch:** `dj_advertisers/views.py`, `dj_advertisers/urls.py`, `dj_advertisers/tests/test_views.py`
@@ -120,8 +135,8 @@ Workers must not modify the same files. Execution order: **Worker A first**, the
 
 | Task | Files | Instructions |
 |------|-------|--------------|
-| Add report view | `dj_advertisers/views.py` | Add report action to `AdvertiserViewSet` or dedicated view; parse query params (date_from, date_to, monetization_type, billing_source, billing_timezone, search, order_by, order); call service; return serialized data |
-| Wire report URL | `dj_advertisers/urls.py` | Register report endpoint (e.g. `advertisers/performance-report/`) |
+| Add report view | `dj_advertisers/views.py` | Añadir `@action(detail=False, url_path='performance-report')` al `AdvertiserViewSet`; parsear query params (date_from, date_to, monetization_type, billing_source, billing_timezone, search, order_by, order); llamar al service; devolver datos serializados |
+| Wire report URL | `dj_advertisers/urls.py` | El `DefaultRouter` expone automáticamente la acción en `advertisers/performance-report/`; no requiere cambios si se usa `@action` en el ViewSet |
 | Add report API tests | `dj_advertisers/tests/test_views.py` | Test report endpoint: required params, filters, sorting, status codes |
 
 **Worker B must not touch:** `dj_advertisers/serializers.py`, `dj_advertisers/services.py`, `dj_advertisers/tests/test_report.py`
@@ -157,7 +172,7 @@ Worker Test does **not** create or modify files. It runs unit tests and e2e chec
    - Implement filters: monetization_type, billing_source, billing_timezone, search.
    - Implement sorting: net_spend, conversions, ctr, effective_cpa, effective_cpc, name (asc/desc).
    - Handle division by zero for CTR, effective_cpc, effective_cpa.
-   - Use Advertiser model; stub event data (impressions, clicks, conversions, spend) until schema exists.
+   - Use Advertiser model; consumir stub con estructura `advertiser_id`, `date`, `impressions`, `clicks`, `conversions`, `gross_spend` (ver sección Event Data Stub).
    - Create `dj_advertisers/tests/test_report.py` — serializer and service tests.
    - Run `python manage.py test dj_advertisers.tests.test_report`.
    - Run `pre-commit run --files dj_advertisers/serializers.py dj_advertisers/services.py dj_advertisers/tests/test_report.py` after changes.
@@ -184,8 +199,8 @@ Use `http` (httpie) against `localhost:8000`. Document each endpoint with the ex
 # Report for date range — 200, list of report rows (or empty [])
 http GET ":8000/api/v1/advertisers/performance-report/?date_from=2025-02-01&date_to=2025-03-01"
 
-# With filters: CPC only, Internal billing — 200, filtered list
-http GET ":8000/api/v1/advertisers/performance-report/?date_from=2025-02-01&date_to=2025-03-01&monetization_type=CPC&billing_source=Internal"
+# With filters: CPC only, Internal billing — 200, filtered list (usar valores enum: INTERNAL, PARTNER)
+http GET ":8000/api/v1/advertisers/performance-report/?date_from=2025-02-01&date_to=2025-03-01&monetization_type=CPC&billing_source=INTERNAL"
 
 # Sorted by conversions descending — 200, list ordered by conversions
 http GET ":8000/api/v1/advertisers/performance-report/?date_from=2025-02-01&date_to=2025-03-01&order_by=conversions&order=desc"
@@ -196,6 +211,31 @@ http GET ":8000/api/v1/advertisers/performance-report/?date_from=2025-02-01&date
 # Sorted by effective CPA ascending (most expensive first) — 200, list ordered by effective_cpa asc
 http GET ":8000/api/v1/advertisers/performance-report/?date_from=2025-02-01&date_to=2025-03-01&order_by=effective_cpa&order=asc"
 ```
+
+**Ejemplo de respuesta esperada (200 OK):**
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Acme Corp",
+    "monetization_type": "CPC",
+    "billing_source": "INTERNAL",
+    "impressions": 10000,
+    "clicks": 250,
+    "conversions": 12,
+    "ctr": 2.5,
+    "gross_spend": "500.00",
+    "discount_rate": "0.0500",
+    "discount_amount": "25.00",
+    "net_spend": "475.00",
+    "effective_cpc": "1.90",
+    "effective_cpa": null
+  }
+]
+```
+
+Campos `effective_cpc` y `effective_cpa` son `null` cuando no aplican (p. ej. CPC sin clicks, CPA sin conversions).
 
 ---
 
