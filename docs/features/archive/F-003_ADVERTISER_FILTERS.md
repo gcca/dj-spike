@@ -1,6 +1,7 @@
 # F-003: Advertiser Filters
 
-**Status:** Open
+**Status:** Complete
+**Completed:** 2025-03-05
 **Impact:** Enable filtering on the advertisers list endpoint via query parameters using django-filter — exact match, comparators (gte, lte, gt, lt), and datetime range for `created_at` and `updated_at`.
 
 ## Problem

@@ -9,12 +9,12 @@ See `AGENTS.md` for F lifecycle stages and management guidelines.
 | F | Title | Status |
 |----|-------|--------|
 | F-002 | Advertiser Performance Report | Open |
-| F-003 | Advertiser Filters | Open |
 
 ## Completed
 
 | F | Title | Completed | Notes |
 |----|-------|-----------|-------|
+| F-003 | Advertiser Filters | 2025-03-05 | django-filter on advertisers list endpoint |
 | F-001 | Advertiser API | 2025-03-05 | REST API CRUD para advertisers |
 
 ## Deferred / Closed
