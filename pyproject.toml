@@ -1,0 +1,20 @@
+[project]
+name = "dj-spike"
+version = "0.1.0"
+description = "Dj Spike App"
+authors = [
+    {name = "gcca", email = "git@gcca.dev"},
+]
+dependencies = [
+    "Django>=6.0.3",
+    "djangorestframework>=3.16.1",
+    "gunicorn>=25.1.0",
+    "psycopg[binary]>=3.1",
+]
+requires-python = "==3.13.*"
+readme = "README.md"
+license = {text = "AGPL-3.0-or-later"}
+
+
+[tool.pdm]
+distribution = false
