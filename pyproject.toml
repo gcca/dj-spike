@@ -11,6 +11,7 @@ dependencies = [
     "gunicorn>=25.1.0",
     "psycopg[binary]>=3.1",
     "django-filter>=25.2",
+    "django-mcp-server>=0.5.7",
 ]
 requires-python = "==3.13.*"
 readme = "README.md"
