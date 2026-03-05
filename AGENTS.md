@@ -2,13 +2,14 @@
 
 ## Tech Stack
 
-- **Python** 3.13.x
-- **Django** >= 6.0.3
-- **Django REST Framework** >= 3.16.1
-- **Gunicorn** >= 25.1.0 (WSGI server)
-- **PostgreSQL** >= 18.3
+- **Python**
+- **Django**
+- **Django REST Framework**
+- **Django Filter**
+- **Gunicorn** (WSGI server)
+- **PostgreSQL**
 
-Refer to `pyproject.toml` for exact package versions and constraints.
+**Always consult `pyproject.toml`** for dependency names, versions, and constraints.
 
 ## Python Environment
 
