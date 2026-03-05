@@ -1,0 +1,35 @@
+# Advertiser fixture for manual and e2e testing
+# Load with: python manage.py loaddata advertiser
+- model: dj_advertisers.advertiser
+  pk: 1
+  fields:
+    name: Acme Corp
+    discount: "0.0500"
+    default_conversion_rate: "0.0100"
+    monetization_type: CPC
+    billing_source: JOBLEAP
+    billing_timezone: UTC
+    created_at: "2025-02-01T10:00:00Z"
+    updated_at: "2025-03-01T14:30:00Z"
+- model: dj_advertisers.advertiser
+  pk: 2
+  fields:
+    name: Beta Partners Inc
+    discount: "0.1200"
+    default_conversion_rate: "0.0150"
+    monetization_type: CPA
+    billing_source: PARTNER
+    billing_timezone: EST
+    created_at: "2025-02-15T09:00:00Z"
+    updated_at: "2025-03-02T11:00:00Z"
+- model: dj_advertisers.advertiser
+  pk: 3
+  fields:
+    name: Gamma Jobs
+    discount: "0.0000"
+    default_conversion_rate: "0.0100"
+    monetization_type: CPC
+    billing_source: JOBLEAP
+    billing_timezone: PST
+    created_at: "2025-03-01T08:00:00Z"
+    updated_at: "2025-03-01T08:00:00Z"

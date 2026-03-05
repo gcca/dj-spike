@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
     "dj_advertisers",
+    "mcp_server",
+    "dj_mcp_fix",
 ]
 
 MIDDLEWARE = [
@@ -128,4 +130,15 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
     ],
+}
+
+DJANGO_MCP_GLOBAL_SERVER_CONFIG = {
+    "instructions": (
+        "Advertiser model: Represents an advertiser (job poster). Fields: id, name, "
+        "discount (0–1), default_conversion_rate, monetization_type (CPC|CPA), "
+        "billing_source (INTERNAL|PARTNER), billing_timezone (UTC|EST|CST|PST), "
+        "created_at, updated_at. Use the list tool to list advertisers (supports filters). "
+        "Use create to add a new advertiser. Use retrieve to get one by id. "
+        "Use update to modify an existing advertiser. Use delete to remove one."
+    ),
 }
